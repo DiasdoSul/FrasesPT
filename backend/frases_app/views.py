@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from .models import Phrase
 from .serializers import PhraseSerializer
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 class PhraseList(generics.ListCreateAPIView):
     queryset = Phrase.objects.filter(is_approved=True)
@@ -37,3 +39,22 @@ class PhraseVote(generics.UpdateAPIView):
         elif action == 'downvote':
             instance.downvotes += 1
         instance.save()
+
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({"detail": "CSRF cookie set"})
+
+
+def user_info(request):
+    if request.user.is_authenticated:
+        return JsonResponse({
+            "username": request.user.username,
+            "is_authenticated": True
+        })
+    return JsonResponse({
+        "is_authenticated": False
+    }, status=401)
+
+
+
